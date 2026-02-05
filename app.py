@@ -28,17 +28,16 @@ st.set_page_config(page_title="Pronto Soccorso Aziendale", page_icon="🚑", lay
 
 ROSSO_BRAND = "#DC0612"
 
+# Nota: Qui usiamo le doppie graffe {{ }} per il CSS e singole { } per le variabili Python
 st.markdown(f"""
 <style>
     header {{visibility: hidden !important;}}
     .stApp {{ background-color: #ffffff !important; }}
     
-    /* FORZA TUTTI I TESTI FUORI DAL BOX NERO */
     html, body, [class*="css"], .stMarkdown, p, h1, h2, h3, h4, span, label, div {{
         color: #1a1a1a;
     }}
 
-    /* BOX PROFIT LEAK - TESTO BIANCO BRILLANTE */
     .leak-box {{
         background-color: #000000 !important;
         padding: 35px;
@@ -47,10 +46,10 @@ st.markdown(f"""
         margin: 25px 0;
         border-bottom: 10px solid {ROSSO_BRAND};
         box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-    }
+    }}
     
     .leak-box p, .leak-box div, .leak-box h3 {{
-        color: #ffffff !important; /* BIANCO PURO */
+        color: #ffffff !important;
     }}
     
     .leak-label {{
@@ -62,12 +61,12 @@ st.markdown(f"""
     }}
 
     .leak-amount {{
-        color: {ROSSO_BRAND} !important; /* IL NUMERO RESTA ROSSO */
+        color: {ROSSO_BRAND} !important;
         font-size: 60px !important;
         font-weight: 900 !important;
         margin: 15px 0;
         text-shadow: 0 0 15px rgba(220, 6, 18, 0.3);
-    }
+    }}
 
     .leak-footer {{
         font-size: 18px !important;
@@ -85,7 +84,6 @@ st.markdown(f"""
         font-weight: 500;
     }}
 
-    /* BOTTONE PRINCIPALE */
     .stButton>button {{ 
         width: 100%; 
         border-radius: 12px; 
@@ -163,7 +161,7 @@ if sintomo != "Scegli il sintomo principale...":
             time.sleep(0.6)
         my_bar.empty()
 
-        # --- BOX RISULTATO (CORRETTO VISIVAMENTE) ---
+        # --- BOX RISULTATO ---
         st.markdown(f"""
             <div class="leak-box">
                 <div class="leak-label">🩸 PROFIT LEAK ANNUALE</div>
