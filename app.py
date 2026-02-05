@@ -32,60 +32,71 @@ st.markdown(f"""
 <style>
     header {{visibility: hidden !important;}}
     .stApp {{ background-color: #ffffff !important; }}
+    
+    /* FORZA TUTTI I TESTI FUORI DAL BOX NERO */
     html, body, [class*="css"], .stMarkdown, p, h1, h2, h3, h4, span, label, div {{
-        color: #1a1a1a !important;
+        color: #1a1a1a;
     }}
 
-    /* BOX PROFIT LEAK */
+    /* BOX PROFIT LEAK - TESTO BIANCO BRILLANTE */
     .leak-box {{
         background-color: #000000 !important;
-        color: #ffffff !important;
-        padding: 30px;
-        border-radius: 15px;
+        padding: 35px;
+        border-radius: 20px;
         text-align: center;
-        margin: 20px 0;
-        border-bottom: 8px solid {ROSSO_BRAND};
+        margin: 25px 0;
+        border-bottom: 10px solid {ROSSO_BRAND};
+        box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    }
+    
+    .leak-box p, .leak-box div, .leak-box h3 {{
+        color: #ffffff !important; /* BIANCO PURO */
     }}
-    .leak-amount {{
-        color: {ROSSO_BRAND} !important;
-        font-size: 55px !important;
+    
+    .leak-label {{
+        text-transform: uppercase;
+        letter-spacing: 3px;
         font-weight: bold;
-        margin: 10px 0;
+        font-size: 14px;
+        margin-bottom: 10px;
     }}
 
-    /* SHOPPING LIST */
+    .leak-amount {{
+        color: {ROSSO_BRAND} !important; /* IL NUMERO RESTA ROSSO */
+        font-size: 60px !important;
+        font-weight: 900 !important;
+        margin: 15px 0;
+        text-shadow: 0 0 15px rgba(220, 6, 18, 0.3);
+    }
+
+    .leak-footer {{
+        font-size: 18px !important;
+        font-style: italic;
+        opacity: 0.9;
+    }}
+
     .waste-item {{
         background-color: #f8f9fa;
-        padding: 10px;
+        padding: 12px;
         border-radius: 10px;
-        margin: 5px 0;
-        border-left: 5px solid #ddd;
+        margin: 8px 0;
+        border-left: 5px solid {ROSSO_BRAND};
         font-size: 16px;
+        font-weight: 500;
     }}
 
-    /* BOTTONI */
+    /* BOTTONE PRINCIPALE */
     .stButton>button {{ 
         width: 100%; 
-        border-radius: 10px; 
-        height: 3.5em; 
+        border-radius: 12px; 
+        height: 4em; 
         font-weight: bold; 
         background-color: {ROSSO_BRAND} !important; 
         color: white !important; 
         border: none;
-        font-size: 18px;
-    }}
-
-    .wa-button {{
-        background-color: #25D366;
-        color: white !important;
-        padding: 15px 25px;
-        border-radius: 50px;
-        text-decoration: none;
-        font-weight: bold;
-        display: inline-block;
-        margin-top: 10px;
-        text-align: center;
-        width: 100%;
+        font-size: 20px;
+        text-transform: uppercase;
+        box-shadow: 0 4px 15px rgba(220, 6, 18, 0.3);
     }}
 </style>
 """, unsafe_allow_html=True)
@@ -93,9 +104,9 @@ st.markdown(f"""
 # =================================================================
 # 3. INTERFACCIA
 # =================================================================
-st.image("https://www.comunicattivamente.it/wp-content/uploads/2023/logo-comunicattivamente.png", width=200)
+st.image("https://www.comunicattivamente.it/wp-content/uploads/2023/logo-comunicattivamente.png", width=220)
 st.markdown(f"<h1 style='text-align: center; color: {ROSSO_BRAND};'>🚑 PRONTO SOCCORSO</h1>", unsafe_allow_html=True)
-st.write("Calcola quanto ti costa il Caos che hai in azienda.")
+st.markdown("<p style='text-align: center; font-size: 1.1em;'>Benvenuto nell'Unità di Crisi dell'Esorcista del Caos.</p>", unsafe_allow_html=True)
 
 with st.expander("📝 Identifica la 'Cartella Clinica' (Facoltativo)", expanded=True):
     col_az, col_em = st.columns(2)
@@ -104,11 +115,12 @@ with st.expander("📝 Identifica la 'Cartella Clinica' (Facoltativo)", expanded
 
 st.divider()
 
-sintomo = st.selectbox("QUALE VIRUS TI STA COLPENDO?", [
+sintomo = st.selectbox("QUALE VIRUS TI STA COLPENDO OGGI?", [
     "Scegli il sintomo...",
     "⌛ Le riunioni mi rubano tutto il tempo",
     "📱 Mail e Notifiche mi mangiano la vita",
-    "👔 Faccio tutto io perché gli altri non sanno fare"
+    "👔 Faccio tutto io perché gli altri non sanno fare",
+    "💸 Vendo molto, ma non vedo mai i soldi (Margini)"
 ])
 
 # =================================================================
@@ -124,78 +136,68 @@ if sintomo != "Scegli il sintomo principale...":
         dettagli_log = f"{p} persone, {durata} min"
 
     elif "mail" in sintomo.lower():
-        ding = st.number_input("Quante volte al giorno guardi notifiche/mail al 'Ding'?", 5, 300, 40)
-        costo_impr = st.number_input("Quanto vale un'ora del tuo tempo? (€)", 50, 500, 100)
-        spreco_annuo = ((ding * 15) / 60) * costo_impr * 220 
+        ding = st.number_input("Quante volte al giorno guardi notifiche/mail appena arriva il 'Ding'?", 5, 300, 40)
+        costo_impr = st.number_input("Quanto vale un'ora del tuo tempo strategico? (€)", 50, 500, 100)
+        ore_perse_die = (ding * 15) / 60 
+        spreco_annuo = ore_perse_die * costo_impr * 220 
         dettagli_log = f"{ding} avvisi/die"
 
     elif "faccio tutto io" in sintomo.lower():
-        ore_operative = st.slider("Ore al giorno passate a fare compiti delegabili?", 1, 10, 4)
-        costo_impr = st.number_input("Valore della tua ora strategica (€)", 50, 500, 100)
+        ore_operative = st.slider("Quante ore al giorno passi a fare compiti che potrebbe fare un dipendente?", 1, 10, 4)
+        costo_impr = st.number_input("Valore della tua ora da Imprenditore (€)", 50, 500, 100)
         spreco_annuo = ore_operative * (costo_impr - 15) * 220 
         dettagli_log = f"{ore_operative} ore/die"
 
+    elif "margini" in sintomo.lower():
+        fatturato = st.number_input("Fatturato Annuo stimato (€)", 50000, 5000000, 500000, step=50000)
+        errore_prezzo = st.slider("Sconti inutili o errori nei prezzi (stima % del fatturato)", 1, 15, 5)
+        spreco_annuo = fatturato * (errore_prezzo / 100)
+        dettagli_log = f"Fatturato {fatturato}, Errore {errore_prezzo}%"
+
     if st.button("AVVIA DIAGNOSI PROFONDA 🔍"):
-        # --- EFFETTO SCANNER WOW ---
         progress_text = "Analisi in corso..."
         my_bar = st.progress(0, text=progress_text)
-        
-        scan_messages = [
-            "Connessione ai flussi operativi...",
-            "Rilevazione inefficienze strutturali...",
-            "Calcolo perdita di ossigeno (capitale)...",
-            "Generazione verdetto dell'Esorcista..."
-        ]
-        
+        scan_messages = ["Mappatura processi...", "Rilevazione emorragie finanziarie...", "Calcolo impatto sulla salute...", "Generazione Verdetto..."]
         for i, msg in enumerate(scan_messages):
             my_bar.progress((i + 1) * 25, text=msg)
-            time.sleep(0.7)
+            time.sleep(0.6)
         my_bar.empty()
 
-        # --- RISULTATO PROFIT LEAK ---
+        # --- BOX RISULTATO (CORRETTO VISIVAMENTE) ---
         st.markdown(f"""
             <div class="leak-box">
-                <p style="text-align:center; font-weight:bold; margin:0; text-transform:uppercase; letter-spacing:2px;">🩸 PROFIT LEAK ANNUALE</p>
+                <div class="leak-label">🩸 PROFIT LEAK ANNUALE</div>
                 <div class="leak-amount">€ {spreco_annuo:,.0f}</div>
-                <p style="font-size:18px;">Soldi che escono e non torneranno più.</p>
+                <div class="leak-footer">Soldi che la tua azienda brucia nel silenzio.</div>
             </div>
         """, unsafe_allow_html=True)
 
-        # --- LA VETRINA DEGLI SPRECHI (IL TOCCO DI MARKETING) ---
         st.write("### 💸 Con questi soldi ogni anno potevi comprare:")
-        
         col_w1, col_w2 = st.columns(2)
         
         with col_w1:
-            if spreco_annuo > 1000:
-                st.markdown('<div class="waste-item">⌚ <b>1 Rolex Submariner</b> (e avanzava pure qualcosa)</div>', unsafe_allow_html=True)
-            if spreco_annuo > 5000:
-                st.markdown('<div class="waste-item">🏖️ <b>2 Mesi di vacanza</b> alle Maldive con la famiglia</div>', unsafe_allow_html=True)
-            if spreco_annuo > 15000:
-                st.markdown('<div class="waste-item">🚗 <b>1 Berlina Nuova</b> ogni singolo anno</div>', unsafe_allow_html=True)
+            if spreco_annuo > 2000: st.markdown('<div class="waste-item">⌚ <b>1 Rolex Submariner</b></div>', unsafe_allow_html=True)
+            if spreco_annuo > 8000: st.markdown('<div class="waste-item">🏖️ <b>Viaggio Business Class</b> alle Maldive</div>', unsafe_allow_html=True)
+            if spreco_annuo > 25000: st.markdown('<div class="waste-item">🚗 <b>Porsche Macan</b> (Canone leasing annuo)</div>', unsafe_allow_html=True)
 
         with col_w2:
-            if spreco_annuo > 2000:
-                st.markdown(f'<div class="waste-item">👥 <b>{int(spreco_annuo/1500)} Mensilità</b> di un nuovo collaboratore</div>', unsafe_allow_html=True)
-            if spreco_annuo > 10000:
-                st.markdown('<div class="waste-item">🏢 <b>1 Anno di affitto</b> in un ufficio di prestigio</div>', unsafe_allow_html=True)
-            if spreco_annuo > 30000:
-                st.markdown('<div class="waste-item">💎 <b>Investimenti pubblicitari</b> per raddoppiare il fatturato</div>', unsafe_allow_html=True)
+            if spreco_annuo > 5000: st.markdown(f'<div class="waste-item">👥 <b>{int(spreco_annuo/2000)} Mensilità</b> per un nuovo braccio destro</div>', unsafe_allow_html=True)
+            if spreco_annuo > 15000: st.markdown('<div class="waste-item">🏢 <b>Nuova sede</b> o restyling uffici</div>', unsafe_allow_html=True)
+            if spreco_annuo > 40000: st.markdown('<div class="waste-item">💎 <b>Dividendi puliti</b> per la tua famiglia</div>', unsafe_allow_html=True)
 
         salva_diagnosi(nome_azienda, email_contatto, sintomo, f"€{spreco_annuo:,.0f}", dettagli_log)
         
         # --- CALL TO ACTION ---
-        st.write("")
-        st.markdown(f"<h3 style='text-align: center;'>Basta fare beneficenza al Caos:</h3>", unsafe_allow_html=True)
-        
+        st.divider()
+        st.markdown("<h3 style='text-align: center;'>Smetti di essere l'ultimo a pagarsi:</h3>", unsafe_allow_html=True)
         c1, c2 = st.columns(2)
         with c1:
-            st.markdown(f'<a href="https://wa.me/393929334563?text=Ho%20calcolato%20il%20mio%20Profit%20Leak:%20€{spreco_annuo:,.0f}.%20Daniele,%20aiutami!" class="wa-button">💬 SCRIVIMI SU WHATSAPP</a>', unsafe_allow_html=True)
+            st.markdown(f'<a href="https://wa.me/393929334563?text=Daniele,%20ho%20fatto%20il%20test%20Pronto%20Soccorso.%20Il%20mio%20Profit%20Leak%20è%20€{spreco_annuo:,.0f}.%20Voglio%20fermare%20lo%20spreco!" style="background-color:#25D366; color:white; padding:15px; border-radius:50px; text-decoration:none; font-weight:bold; display:block; text-align:center;">💬 WHATSAPP DI EMERGENZA</a>', unsafe_allow_html=True)
         with c2:
-            st.markdown(f'<a href="https://www.comunicattivamente.it/ebook-ansia-spa" class="wa-button" style="background-color:#1a1a1a;">📘 SCARICA EBOOK</a>', unsafe_allow_html=True)
+            st.markdown(f'<a href="https://www.comunicattivamente.it/ebook-ansia-spa" style="background-color:#1a1a1a; color:white; padding:15px; border-radius:50px; text-decoration:none; font-weight:bold; display:block; text-align:center;">📘 SCARICA EBOOK</a>', unsafe_allow_html=True)
         
         st.write("")
-        st.markdown(f"<div style='text-align: center;'><a href='tel:+393929334563' style='font-size: 24px; color: {ROSSO_BRAND}; text-decoration: none; font-weight: bold;'>📞 +39 392 933 4563</a></div>", unsafe_allow_html=True)
+        st.markdown(f"<div style='text-align: center;'><a href='tel:+393929334563' style='font-size: 24px; color: {ROSSO_BRAND}; text-decoration: none; font-weight: bold;'>📞 CHIAMA: +39 392 933 4563</a></div>", unsafe_allow_html=True)
 
 # =================================================================
 # 5. FOOTER
@@ -206,6 +208,6 @@ st.write("---")
 st.markdown(f"""
     <div style="text-align: center; font-size: 14px;">
         © 2024 <a href="https://www.comunicattivamente.it" target="_blank" style="color: {ROSSO_BRAND}; text-decoration: none; font-weight: bold;">comunicAttivamente</a><br>
-        L'Esorcista del Caos Aziendale.
+        La medicina per il tuo tempo e il tuo profitto.
     </div>
 """, unsafe_allow_html=True)
