@@ -1,137 +1,174 @@
 import streamlit as st
-import time
 import pandas as pd
 from datetime import datetime
 import gspread
 from google.oauth2.service_account import Credentials
+import time
+import random
 
 # =================================================================
-# 1. CONNESSIONE A SHEET (Cartella Clinica Clienti)
+# 1. CONNESSIONE A GOOGLE SHEETS (Archivio Diagnosi)
 # =================================================================
-def salva_diagnosi(problema, risultato, nota):
+def salva_diagnosi(sintomo, risultato, dettagli):
     try:
         creds_dict = st.secrets["gcp_service_account"]
         scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
         creds = Credentials.from_service_account_info(creds_dict, scopes=scope)
         client = gspread.authorize(creds)
-        # Assicurati di avere un foglio chiamato "Diagnosi"
         sheet = client.open_by_url(st.secrets["private_gsheets_url"]).worksheet("Diagnosi")
         ora = datetime.now().strftime("%d/%m/%Y %H:%M")
-        sheet.append_row([ora, problema, risultato, nota])
+        sheet.append_row([ora, sintomo, risultato, dettagli])
     except:
-        pass # Se non c'è connessione, l'app non deve crashare
+        pass # Silenzioso se fallisce, non vogliamo bloccare l'utente
 
 # =================================================================
-# 2. DESIGN E STILE
+# 2. CONFIGURAZIONE E DESIGN (Stile Pronto Soccorso)
 # =================================================================
 st.set_page_config(page_title="Pronto Soccorso Aziendale", page_icon="🚑", layout="centered")
 
 st.markdown("""
 <style>
-    header {visibility: hidden !important;}
-    .stApp { background-color: #ffffff !important; color: #1a1a1a !important; }
-    html, body, [class*="css"], p, h1, h2, h3, label { color: #1a1a1a !important; }
-    
-    .emergency-box {
-        background-color: #fff5f5;
-        border: 2px solid #ff4b4b;
-        padding: 20px;
-        border-radius: 15px;
-        margin-bottom: 20px;
+    /* ANTI DARK-MODE */
+    html, body, [class*="css"], .stMarkdown, p, h1, h2, h3, h4, span, label, div {
+        color: #1a1a1a !important;
     }
-    .verdetto-esorcista {
-        background-color: #000000;
-        color: #ffffff !important;
+    .stApp { background-color: #ffffff !important; }
+    header {visibility: hidden !important;}
+
+    /* BOX DIAGNOSI */
+    .emergency-box {
+        background-color: #fff5f5 !important;
+        border: 2px solid #ff4b4b !important;
         padding: 25px;
+        border-radius: 15px;
+        text-align: center;
+        margin: 20px 0;
+    }
+    
+    /* BOX ESORCISTA */
+    .verdetto-box {
+        background-color: #000000 !important;
+        color: #ffffff !important;
+        padding: 30px;
         border-radius: 10px;
         font-style: italic;
         text-align: center;
+        font-size: 20px;
         margin-top: 20px;
+        line-height: 1.4;
     }
+
+    /* BOTTONI */
+    .stButton>button { width: 100%; border-radius: 10px; height: 3.5em; font-weight: bold; }
 </style>
 """, unsafe_allow_html=True)
 
 # =================================================================
 # 3. INTERFACCIA
 # =================================================================
-st.image("https://www.comunicattivamente.it/wp-content/uploads/2023/logo-comunicattivamente.png", width=150)
+st.image("https://www.comunicattivamente.it/wp-content/uploads/2023/logo-comunicattivamente.png", width=180)
 st.title("🚑 PRONTO SOCCORSO")
-st.subheader("Individua il tumore del tempo nella tua azienda.")
-
-st.write("### Dove senti più dolore oggi?")
-sintomo = st.selectbox("Seleziona il tuo problema principale:", [
-    "Scegli il sintomo...",
-    "⌛ Le riunioni sono infinite e inutili",
-    "📱 Mail e Notifiche mi mangiano la testa",
-    "🗣️ I dipendenti non sanno cosa fare"
-])
+st.write("Identifica il virus che sta bloccando la tua azienda.")
 
 st.divider()
 
+sintomo = st.selectbox("DOVE TI FA MALE OGGI?", [
+    "Scegli il sintomo principale...",
+    "⌛ Le riunioni mi rubano tutto il tempo",
+    "📱 Mail e Notifiche mi mangiano la vita",
+    "👔 Faccio tutto io perché gli altri non sanno fare"
+])
+
+st.write("")
+
 # =================================================================
-# CASO 1: RIUNIONI
+# DIAGNOSI 1: RIUNIONI
 # =================================================================
-if sintomo == "⌛ Le riunioni sono infinite e inutili":
-    st.write("### 🚨 L'Analizzatore di Riunioni")
-    col1, col2 = st.columns(2)
-    p = col1.number_input("Partecipanti", 1, 20, 4)
-    c = col2.number_input("Costo orario medio persona (€)", 10, 100, 35)
-    durata = st.slider("Durata media riunione (minuti)", 10, 180, 60)
+if "riunioni" in sintomo.lower():
+    st.subheader("🚨 Analisi Costo Chiacchiere")
+    with st.container(border=True):
+        p = st.number_input("Quante persone partecipano mediamente?", 2, 50, 4)
+        costo = st.number_input("Costo orario medio di un partecipante (€)", 10, 200, 35)
+        durata = st.slider("Quanto dura la riunione? (minuti)", 15, 180, 60)
     
-    costo_totale = (p * c) * (durata / 60)
-    
-    if st.button("GENERA DIAGNOSI 🔍"):
-        st.markdown(f"""
-        <div class="emergency-box">
-            <h2 style="text-align:center; color:#ff4b4b;">Questa chiacchierata ti costa: € {costo_totale:.2f}</h2>
-        </div>
-        """, unsafe_allow_html=True)
+    costo_chiacchiera = (p * costo) * (durata / 60)
+
+    if st.button("GENERA VERDETTO 🔍", type="primary"):
+        st.markdown(f"""<div class="emergency-box">
+            <h3 style="margin:0; color:#ff4b4b;">DIAGNOSI: Beneficenza Aziendale</h3>
+            <h1 style="color:#ff4b4b; margin:10px 0;">€ {costo_chiacchiera:.2f}</h1>
+            <p>È il capitale che hai appena bruciato.</p>
+        </div>""", unsafe_allow_html=True)
         
-        st.markdown("""
-        <div class="verdetto-esorcista">
+        st.markdown("""<div class="verdetto-box">
             "Se la riunione dura più di 40 minuti ed esci senza un obiettivo scritto e una scadenza assegnata, 
-            non hai fatto una riunione. Hai fatto beneficenza oraria ai tuoi dipendenti."
-        </div>
-        """, unsafe_allow_html=True)
+            non hai fatto una riunione. Hai regalato soldi ai tuoi dipendenti per stare seduti a parlare."
+        </div>""", unsafe_allow_html=True)
         
-        salva_diagnosi("Riunioni", f"€{costo_totale}", f"Durata {durata} min")
+        salva_diagnosi("Riunioni", f"€{costo_chiacchiera:.2f}", f"{p} persone, {durata} min")
         st.link_button("ESORCIZZA LE RIUNIONI 🔥", "mailto:daniele@comunicattivamente.it")
 
 # =================================================================
-# CASO 2: MAIL E NOTIFICHE
+# DIAGNOSI 2: MAIL / NOTIFICHE
 # =================================================================
-elif sintomo == "📱 Mail e Notifiche mi mangiano la testa":
-    st.write("### 🚨 Il Calcolatore della Distrazione")
-    avvisi = st.number_input("Quante volte al giorno guardi il telefono o le mail appena arriva il 'Ding'?", 1, 200, 30)
+elif "mail" in sintomo.lower():
+    st.subheader("🚨 Analisi Nevrosi Digitale")
+    with st.container(border=True):
+        ding = st.number_input("Quante volte al giorno senti un 'Ding' o guardi le mail?", 5, 300, 40)
     
-    # La scienza dice che servono 15 min per tornare focalizzati
-    tempo_perso_h = (avvisi * 15) / 60
-    
-    if st.button("GENERA DIAGNOSI 🔍"):
-        st.markdown(f"""
-        <div class="emergency-box">
-            <h2 style="text-align:center; color:#ff4b4b;">Oggi hai buttato: {tempo_perso_h:.1f} ore di concentrazione</h2>
-        </div>
-        """, unsafe_allow_html=True)
+    # La scienza: 15 min per recuperare il focus
+    ore_focus_perse = (ding * 15) / 60
+
+    if st.button("GENERA VERDETTO 🔍", type="primary"):
+        st.markdown(f"""<div class="emergency-box">
+            <h3 style="margin:0; color:#ff4b4b;">DIAGNOSI: Reattività Patologica</h3>
+            <h1 style="color:#ff4b4b; margin:10px 0;">{ore_focus_perse:.1f} Ore</h1>
+            <p>Di concentrazione perse OGNI GIORNO.</p>
+        </div>""", unsafe_allow_html=True)
         
-        st.markdown("""
-        <div class="verdetto-esorcista">
-            "La reattività immediata non è efficienza, è nevrosi aziendale. 
-            Se rispondi a tutto subito, sei uno schiavo della tecnologia, non un imprenditore."
-        </div>
-        """, unsafe_allow_html=True)
+        st.markdown("""<div class="verdetto-box">
+            "La reattività immediata non è efficienza, è schiavitù digitale. 
+            Se rispondi a tutto appena arriva, non sei un imprenditore: sei un citofono."
+        </div>""", unsafe_allow_html=True)
         
-        salva_diagnosi("Notifiche", f"{tempo_perso_h} ore", f"{avvisi} avvisi")
-        st.link_button("LIBERATI DALLE CATENE ⛓️", "mailto:daniele@comunicattivamente.it")
+        salva_diagnosi("Notifiche", f"{ore_focus_perse:.1f} ore perse", f"{ding} avvisi/die")
+        st.link_button("LIBERATI DAL CITOFONO ⛓️", "mailto:daniele@comunicattivamente.it")
 
 # =================================================================
-# CASO 3: DELEGA (PROSSIMAMENTE)
+# DIAGNOSI 3: DELEGA
 # =================================================================
-elif sintomo == "🗣️ I dipendenti non sanno cosa fare":
-    st.info("Questo modulo di diagnosi è in fase di attivazione. Ma sappiamo già che il problema è la mancanza di procedure scritte.")
-    st.link_button("CHIAMA L'ESORCISTA SUBITO", "mailto:daniele@comunicattivamente.it")
+elif "faccio tutto io" in sintomo.lower():
+    st.subheader("🚨 Analisi Titolare Tuttofare")
+    with st.container(border=True):
+        ore_operative = st.slider("Quante ore al giorno passi a fare compiti che potrebbe fare un dipendente?", 1, 10, 4)
+        tuo_valore = st.number_input("Quanto vale un'ora del TUO tempo strategico? (€)", 50, 500, 100)
+    
+    spreco_strategico = ore_operative * tuo_valore
 
-# --- FOOTER ---
+    if st.button("GENERA VERDETTO 🔍", type="primary"):
+        st.markdown(f"""<div class="emergency-box">
+            <h3 style="margin:0; color:#ff4b4b;">DIAGNOSI: Titolare Dipendente</h3>
+            <h1 style="color:#ff4b4b; margin:10px 0;">€ {spreco_strategico:.2f}</h1>
+            <p>È il valore che sottrai alla crescita dell'azienda OGNI GIORNO.</p>
+        </div>""", unsafe_allow_html=True)
+        
+        st.markdown("""<div class="verdetto-box">
+            "Ogni volta che dici 'Faccio prima a farlo io', stai rubando tempo al tuo futuro per fare un lavoro da 15 euro l'ora. 
+            Complimenti: sei il dipendente più costoso e meno efficiente che hai."
+        </div>""", unsafe_allow_html=True)
+        
+        salva_diagnosi("Delega", f"€{spreco_strategico} persi/die", f"{ore_operative} ore operative")
+        st.link_button("SMETTI DI FARE IL DIPENDENTE 👔", "mailto:daniele@comunicattivamente.it")
+
+# =================================================================
+# FOOTER
+# =================================================================
 st.write("")
 st.write("---")
-st.markdown("<div style='text-align: center; color: #888;'>comunicAttivamente | Ansia S.p.A. Division</div>", unsafe_allow_html=True)
+st.markdown(f"""
+    <div style="text-align: center; padding: 20px;">
+        <p style="font-weight:bold; margin-bottom:5px;">Daniele Salvatori | comunicAttivamente</p>
+        <a href="https://wa.me/393929334563" style="color: #25D366; text-decoration: none; font-weight: bold; font-size:1.2em;">💬 CONTATTO DI EMERGENZA</a><br><br>
+        <div style="color: #888; font-size: 12px;">Powered by SuPeR & Streamlit</div>
+    </div>
+""", unsafe_allow_html=True)
