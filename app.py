@@ -17,13 +17,13 @@ def salva_diagnosi(azienda, email, sintomo, risultato, dettagli):
         client = gspread.authorize(creds)
         sheet = client.open_by_url(st.secrets["private_gsheets_url"]).worksheet("valutazione cliente")
         ora = datetime.now().strftime("%d/%m/%Y %H:%M")
-        # Aggiungiamo Azienda ed Email all'invio
-        sheet.append_row([ora, azienda, email, sintomo, risultato, dettagli])
+        # Ordine Sheet: Data, Azienda, Email, Sintomo, Risultato, Dettagli
+        sheet.append_row([ora, azienda if azienda else "Anonima", email if email else "N/D", sintomo, risultato, dettagli])
     except:
         pass
 
 # =================================================================
-# 2. CONFIGURAZIONE E DESIGN (Rosso #DC0612)
+# 2. CONFIGURAZIONE E DESIGN (Rosso comunicAttivamente #DC0612)
 # =================================================================
 st.set_page_config(page_title="Pronto Soccorso Aziendale", page_icon="🚑", layout="centered")
 
@@ -37,18 +37,22 @@ st.markdown(f"""
         color: #1a1a1a !important;
     }}
 
-    /* BOX DIAGNOSI */
-    .emergency-box {{
-        background-color: #fff5f5 !important;
-        border: 2px solid {ROSSO_BRAND} !important;
-        padding: 25px;
+    /* BOX PROFIT LEAK */
+    .leak-box {{
+        background-color: #000000 !important;
+        color: #ffffff !important;
+        padding: 30px;
         border-radius: 15px;
         text-align: center;
         margin: 20px 0;
+        border-bottom: 5px solid {ROSSO_BRAND};
     }}
-    
-    /* TITOLI IN ROSSO BRAND */
-    .brand-text {{ color: {ROSSO_BRAND} !important; font-weight: bold; }}
+    .leak-amount {{
+        color: {ROSSO_BRAND} !important;
+        font-size: 50px !important;
+        font-weight: bold;
+        margin: 10px 0;
+    }}
 
     /* BOTTONI */
     .stButton>button {{ 
@@ -69,20 +73,6 @@ st.markdown(f"""
         text-decoration: none;
         font-weight: bold;
         display: inline-block;
-        margin-top: 10px;
-        text-align: center;
-        width: 100%;
-    }}
-
-    .ebook-button {{
-        background-color: #1a1a1a;
-        color: white !important;
-        padding: 15px 25px;
-        border-radius: 50px;
-        text-decoration: none;
-        font-weight: bold;
-        display: inline-block;
-        margin-top: 10px;
         text-align: center;
         width: 100%;
     }}
@@ -90,101 +80,87 @@ st.markdown(f"""
 """, unsafe_allow_html=True)
 
 # =================================================================
-# 3. INTERFACCIA (RACCOLTA DATI FACOLTATIVA)
+# 3. INTERFACCIA
 # =================================================================
 st.image("https://www.comunicattivamente.it/wp-content/uploads/2023/logo-comunicattivamente.png", width=200)
 st.markdown(f"<h1 style='text-align: center; color: {ROSSO_BRAND};'>🚑 PRONTO SOCCORSO</h1>", unsafe_allow_html=True)
-st.write("Identifica il virus che sta bloccando la tua crescita aziendale.")
+st.write("Calcola quanto ti costa il Caos che hai in azienda.")
 
-with st.expander("📝 I tuoi riferimenti (Opzionale)", expanded=True):
+with st.expander("📝 Identifica la 'Cartella Clinica' (Facoltativo)", expanded=True):
     col_az, col_em = st.columns(2)
-    nome_azienda = col_az.text_input("Nome Azienda", placeholder="Facoltativo")
-    email_contatto = col_em.text_input("Tua Email", placeholder="Facoltativo")
+    nome_azienda = col_az.text_input("Nome Azienda", placeholder="Esempio: Rossi Srl")
+    email_contatto = col_em.text_input("Tua Email", placeholder="email@esempio.it")
 
 st.divider()
 
-sintomo = st.selectbox("DOVE TI FA MALE OGGI?", [
-    "Scegli il sintomo principale...",
+sintomo = st.selectbox("QUALE VIRUS TI STA COLPENDO?", [
+    "Scegli il sintomo...",
     "⌛ Le riunioni mi rubano tutto il tempo",
     "📱 Mail e Notifiche mi mangiano la vita",
     "👔 Faccio tutto io perché gli altri non sanno fare"
 ])
 
 # =================================================================
-# LOGICA DEI SINTOMI
-# =================================================================
-if "riunioni" in sintomo.lower():
-    st.subheader("🚨 Analisi Costo Chiacchiere")
-    p = st.number_input("Quante persone in media?", 2, 50, 4)
-    costo = st.number_input("Costo orario medio persona (€)", 10, 200, 35)
-    durata = st.slider("Durata media riunione (minuti)", 15, 180, 60)
-    
-    costo_chiacchiera = (p * costo) * (durata / 60)
-
-    if st.button("GENERA VERDETTO 🔍"):
-        st.markdown(f"""<div class="emergency-box">
-            <h3 style="margin:0;">DIAGNOSI: Beneficenza Aziendale</h3>
-            <h1 style="color:{ROSSO_BRAND}; margin:10px 0;">€ {costo_chiacchiera:.2f}</h1>
-            <p>Bruciati per ogni singola riunione.</p>
-        </div>""", unsafe_allow_html=True)
-        st.error(f"📈 Se ne fai una a settimana, stai regalando **€ {costo_chiacchiera*52:,.0f} all'anno** al Caos.")
-        
-        salva_diagnosi(nome_azienda, email_contatto, "Riunioni", f"€{costo_chiacchiera}", f"{p} pers, {durata} min")
-
-elif "mail" in sintomo.lower():
-    st.subheader("🚨 Analisi Nevrosi Digitale")
-    ding = st.number_input("Quante volte al giorno guardi il telefono/mail al 'Ding'?", 5, 300, 40)
-    ore_perse = (ding * 15) / 60
-
-    if st.button("GENERA VERDETTO 🔍"):
-        st.markdown(f"""<div class="emergency-box">
-            <h3 style="margin:0;">DIAGNOSI: Reattività Patologica</h3>
-            <h1 style="color:{ROSSO_BRAND}; margin:10px 0;">{ore_perse:.1f} Ore</h1>
-            <p>Di pura concentrazione perse OGNI GIORNO.</p>
-        </div>""", unsafe_allow_html=True)
-        st.warning(f"💡 È come se un tuo dipendente lavorasse **{ore_perse*220/8:.0f} giorni all'anno** solo per guardare notifiche.")
-        
-        salva_diagnosi(nome_azienda, email_contatto, "Notifiche", f"{ore_perse} ore", f"{ding} avvisi")
-
-elif "faccio tutto io" in sintomo.lower():
-    st.subheader("🚨 Analisi Titolare Tuttofare")
-    ore_operative = st.slider("Ore al giorno passate a fare compiti delegabili?", 1, 10, 4)
-    tuo_valore = st.number_input("Quanto vale un'ora del TUO tempo strategico? (€)", 50, 500, 100)
-    spreco = ore_operative * tuo_valore
-
-    if st.button("GENERA VERDETTO 🔍"):
-        st.markdown(f"""<div class="emergency-box">
-            <h3 style="margin:0;">DIAGNOSI: Titolare Dipendente</h3>
-            <h1 style="color:{ROSSO_BRAND}; margin:10px 0;">€ {spreco:.2f}</h1>
-            <p>Di valore sottratto al futuro dell'azienda OGNI GIORNO.</p>
-        </div>""", unsafe_allow_html=True)
-        st.info(f"💸 In un anno, la tua mancanza di delega ti costa **€ {spreco*220:,.0f}**.")
-        
-        salva_diagnosi(nome_azienda, email_contatto, "Delega", f"€{spreco}/die", f"{ore_operative} ore operative")
-
-# =================================================================
-# 4. AREA CONVERSIONE (Ebook, WhatsApp, Telefono)
+# 4. CALCOLATORI E PROFIT LEAK
 # =================================================================
 if sintomo != "Scegli il sintomo principale...":
-    st.divider()
-    st.markdown(f"<h3 style='text-align: center;'>L'Esorcismo inizia qui:</h3>", unsafe_allow_html=True)
     
-    c1, c2 = st.columns(2)
-    with c1:
-        st.markdown(f'<a href="https://wa.me/393929334563" class="wa-button">💬 SCRIVIMI SU WHATSAPP</a>', unsafe_allow_html=True)
-    with c2:
-        st.markdown(f'<a href="https://www.comunicattivamente.it/ebook-ansia-spa" class="ebook-button">📘 SCARICA EBOOK</a>', unsafe_allow_html=True)
-    
-    st.write("")
-    st.markdown(f"""
-        <div style="text-align: center;">
-            <p>Oppure chiama l'Unità di Crisi:</p>
-            <a href="tel:+393929334563" style="font-size: 24px; color: {ROSSO_BRAND}; text-decoration: none; font-weight: bold;">+39 392 933 4563</a>
-        </div>
-    """, unsafe_allow_html=True)
+    if "riunioni" in sintomo.lower():
+        p = st.number_input("Partecipanti medi in sala", 2, 50, 4)
+        costo = st.number_input("Costo orario medio collaboratore (€)", 10, 200, 30)
+        durata = st.slider("Durata media della riunione (minuti)", 15, 180, 60)
+        
+        spreco_singolo = (p * costo) * (durata / 60)
+        spreco_annuo = spreco_singolo * 52 # Una a settimana
+        dettagli_log = f"{p} persone, {durata} min"
+
+    elif "mail" in sintomo.lower():
+        ding = st.number_input("Quante volte al giorno guardi notifiche/mail al 'Ding'?", 5, 300, 40)
+        costo_impr = st.number_input("Quanto vale un'ora del tuo tempo? (€)", 50, 500, 100)
+        
+        ore_perse_die = (ding * 15) / 60 # 15 min per recuperare focus
+        spreco_annuo = ore_perse_die * costo_impr * 220 # Giorni lavorativi
+        dettagli_log = f"{ding} avvisi/die"
+
+    elif "faccio tutto io" in sintomo.lower():
+        ore_operative = st.slider("Ore al giorno passate a fare compiti delegabili?", 1, 10, 4)
+        costo_impr = st.number_input("Valore della tua ora strategica (€)", 50, 500, 100)
+        
+        spreco_annuo = ore_operative * (costo_impr - 15) * 220 # -15 perché è il costo di un dipendente che lo farebbe al posto tuo
+        dettagli_log = f"{ore_operative} ore/die"
+
+    if st.button("VEDI IL PROFIT LEAK 🩸"):
+        st.markdown(f"""
+            <div class="leak-box">
+                <p style="text-align:center; font-weight:bold; margin:0; text-transform:uppercase; letter-spacing:2px;">🩸 PROFIT LEAK ANNUALE</p>
+                <div class="leak-amount">€ {spreco_annuo:,.0f}</div>
+                <p style="font-size:18px;">È la ricchezza che stai regalando al Caos ogni anno.</p>
+            </div>
+        """, unsafe_allow_html=True)
+        
+        # Traduzione emotiva dello spreco
+        if spreco_annuo > 20000:
+            st.error(f"⚠️ **IMPATTO:** Con questi soldi potresti assumere un nuovo collaboratore o regalarti **4 mesi di vacanza extra**.")
+        elif spreco_annuo > 5000:
+            st.warning(f"⚠️ **IMPATTO:** Stai bruciando l'equivalente di un'auto nuova o dell'affitto di un ufficio prestigioso.")
+        
+        salva_diagnosi(nome_azienda, email_contatto, sintomo, f"€{spreco_annuo:,.0f} (annui)", dettagli_log)
+        
+        # --- CALL TO ACTION ---
+        st.divider()
+        st.markdown("<h3 style='text-align: center;'>L'Esorcismo inizia qui:</h3>", unsafe_allow_html=True)
+        
+        c1, c2 = st.columns(2)
+        with c1:
+            st.markdown(f'<a href="https://wa.me/393929334563?text=Ho%20calcolato%20il%20mio%20Profit%20Leak:%20€{spreco_annuo:,.0f}.%20Aiutami!" class="wa-button">💬 WHATSAPP</a>', unsafe_allow_html=True)
+        with c2:
+            st.markdown(f'<a href="https://www.comunicattivamente.it/ebook-ansia-spa" class="wa-button" style="background-color:#1a1a1a;">📘 SCARICA EBOOK</a>', unsafe_allow_html=True)
+        
+        st.write("")
+        st.markdown(f"<div style='text-align: center;'><a href='tel:+393929334563' style='font-size: 24px; color: {ROSSO_BRAND}; text-decoration: none; font-weight: bold;'>📞 +39 392 933 4563</a></div>", unsafe_allow_html=True)
 
 # =================================================================
-# 5. FOOTER CLICCABILE
+# 5. FOOTER
 # =================================================================
 st.write("")
 st.write("")
@@ -192,6 +168,6 @@ st.write("---")
 st.markdown(f"""
     <div style="text-align: center; font-size: 14px;">
         © 2024 <a href="https://www.comunicattivamente.it" target="_blank" style="color: {ROSSO_BRAND}; text-decoration: none; font-weight: bold;">comunicAttivamente</a><br>
-        Esorcismo del Caos Aziendale
+        Il software per estirpare l'inefficienza.
     </div>
 """, unsafe_allow_html=True)
